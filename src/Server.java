@@ -38,7 +38,7 @@ public class Server extends JFrame {
             e.printStackTrace();
         }
 
-        setSize(480,640);
+        setSize(480, 640);
         setTitle("TCP Chat - Server");
         setResizable(false);
         setLayout(new BorderLayout());

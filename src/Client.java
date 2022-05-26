@@ -61,7 +61,7 @@ public class Client extends JFrame {
             e.printStackTrace();
         }
 
-        setSize(480,640);
+        setSize(480, 640);
         setTitle("TCP Chat - Client " + username);
         setResizable(false);
         setLayout(new BorderLayout());

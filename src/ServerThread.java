@@ -3,12 +3,11 @@ import java.net.Socket;
 import java.util.ArrayList;
 
 public class ServerThread implements Runnable {
+    public static ArrayList<ServerThread> serverThreads = new ArrayList<>(); // Lista svih aktivnih klijenata za slanje
     private final Socket socket;
     private final BufferedReader in;
     private final BufferedWriter out;
     private final String clientUsername;
-
-    public static ArrayList<ServerThread> serverThreads = new ArrayList<>(); // Lista svih aktivnih klijenata za slanje
 
     public ServerThread(Socket socket) throws IOException {
         this.socket = socket;
