@@ -3,7 +3,7 @@ import java.net.Socket;
 import java.util.ArrayList;
 
 public class ServerThread implements Runnable {
-    public static ArrayList<ServerThread> serverThreads = new ArrayList<>(); // Lista svih aktivnih klijenata za slanje
+    public static ArrayList<ServerThread> serverThreads = new ArrayList<>();
     private final Socket socket;
     private final BufferedReader in;
     private final BufferedWriter out;
@@ -39,7 +39,6 @@ public class ServerThread implements Runnable {
                     if (msgFrom.equals("/exit")) {
                         break;
                     }
-
                     msgBroadcast(msgFrom);
                 } catch (IOException e) {
                     break;

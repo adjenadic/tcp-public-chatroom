@@ -69,7 +69,6 @@ public class Client extends JFrame {
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLocationRelativeTo(null);
 
-        // GORNJI DEO
         chatArea = new JTextArea();
         chatArea.setEditable(false);
 
@@ -78,7 +77,6 @@ public class Client extends JFrame {
         chatArea.setBackground(topPanel.getBackground());
         chatArea.setForeground(Color.BLACK);
 
-        // DONJI DEO
         JLabel sendMsgLabel = new JLabel("Use /exit to leave the chat.");
         sendMsgLabel.setForeground(Color.BLACK);
 
@@ -112,7 +110,6 @@ public class Client extends JFrame {
         bottomPanel.add(new JScrollPane(sendMsgArea));
         bottomPanel.add(sendMsgBtn);
 
-        // SPLIT PANE
         JSplitPane splitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT, topPanel, bottomPanel);
         splitPane.setTopComponent(topPanel);
         splitPane.setBottomComponent(bottomPanel);
