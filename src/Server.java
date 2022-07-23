@@ -21,13 +21,17 @@ public class Server extends JFrame {
         server.initServer();
     }
 
-    public void initServer() throws IOException {
-        while (true) {
-            Socket socket = serverSocket.accept();
-            chatArea.append(DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss").format(LocalDateTime.now()) + ": A new client has connected!\n");
-            ServerThread serverThread = new ServerThread(socket);
-            Thread thread = new Thread(serverThread);
-            thread.start();
+    public void initServer() {
+        try {
+            while (!serverSocket.isClosed()) {
+                Socket socket = serverSocket.accept();
+                chatArea.append(DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss").format(LocalDateTime.now()) + ": A new client has connected.\n");
+                ServerThread serverThread = new ServerThread(socket);
+                Thread thread = new Thread(serverThread);
+                thread.start();
+            }
+        } catch (IOException e) {
+            closeServerSocket();
         }
     }
 
@@ -56,5 +60,15 @@ public class Server extends JFrame {
 
         add(panel, BorderLayout.CENTER);
         setVisible(true);
+    }
+
+    public void closeServerSocket() {
+        try {
+            if (serverSocket != null) {
+                serverSocket.close();
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 }

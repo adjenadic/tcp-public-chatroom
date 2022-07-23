@@ -1,5 +1,7 @@
 import java.io.*;
 import java.net.Socket;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 
 public class ServerThread implements Runnable {
@@ -19,21 +21,11 @@ public class ServerThread implements Runnable {
         msgBroadcast("New user: " + clientUsername + ".");
     }
 
-    public void msgBroadcast(String msgTo) throws IOException {
-        for (ServerThread serverThread : serverThreads) {
-            if (!serverThread.clientUsername.equals(clientUsername)) {
-                serverThread.out.write(msgTo);
-                serverThread.out.newLine();
-                serverThread.out.flush();
-            }
-        }
-    }
-
     @Override
     public void run() {
         String msgFrom;
         try {
-            while (true) {
+            while (socket.isConnected()) {
                 try {
                     msgFrom = in.readLine();
                     if (msgFrom.equals("/exit")) {
@@ -41,6 +33,7 @@ public class ServerThread implements Runnable {
                     }
                     msgBroadcast(msgFrom);
                 } catch (IOException e) {
+                    closeAll(socket, in, out);
                     break;
                 }
             }
@@ -48,5 +41,43 @@ public class ServerThread implements Runnable {
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+    public void msgBroadcast(String msgTo) {
+        for (ServerThread serverThread : serverThreads) {
+            try {
+                if (!serverThread.clientUsername.equals(clientUsername)) {
+                    serverThread.out.write(msgTo);
+                    serverThread.out.newLine();
+                    serverThread.out.flush();
+                }
+            } catch (IOException e) {
+                closeAll(socket, in, out);
+            }
+        }
+    }
+
+    public void closeAll(Socket socket, BufferedReader in, BufferedWriter out) {
+        if (serverThreads.contains(this)) {
+            removeServerThread();
+        }
+        try {
+            if (in != null) {
+                in.close();
+            }
+            if (out != null) {
+                out.close();
+            }
+            if (socket != null) {
+                socket.close();
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void removeServerThread() {
+        msgBroadcast(DateTimeFormatter.ofPattern("HH:mm:ss").format(LocalDateTime.now()) + "\t" + clientUsername + " has left the chat.");
+        serverThreads.remove(this);
     }
 }

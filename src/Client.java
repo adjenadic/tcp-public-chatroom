@@ -2,22 +2,28 @@ import javax.swing.*;
 import java.awt.*;
 import java.io.*;
 import java.net.Socket;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 
 public class Client extends JFrame {
     private final Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
 
-    private final Socket socket;
-    private final BufferedReader in;
-    private final BufferedWriter out;
-    private final String username;
+    private Socket socket;
+    private BufferedReader in;
+    private BufferedWriter out;
+    private String username;
 
     private JTextArea chatArea;
 
-    public Client(Socket socket, String username) throws IOException {
-        this.socket = socket;
-        in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-        out = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream()));
-        this.username = username;
+    public Client(Socket socket, String username) {
+        try {
+            this.socket = socket;
+            in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+            out = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream()));
+            this.username = username;
+        } catch (IOException e) {
+            closeAll(socket, in, out);
+        }
     }
 
     public static void main(String[] args) throws IOException {
@@ -32,26 +38,6 @@ public class Client extends JFrame {
         client.initGUI();
         client.msgListen();
         client.msgSend(username);
-    }
-
-    public void msgSend(String msgToSend) throws IOException {
-        out.write(msgToSend);
-        out.newLine();
-        out.flush();
-    }
-
-    public void msgListen() {
-        new Thread(() -> {
-            String msgFrom;
-            while (true) {
-                try {
-                    msgFrom = in.readLine();
-                    chatArea.append(msgFrom + "\n");
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }
-        }).start();
     }
 
     private void initGUI() {
@@ -94,7 +80,7 @@ public class Client extends JFrame {
                     System.exit(0);
                 } else if (!msgToSend.isBlank()) {
                     msgSend(username + ": " + msgToSend.replaceAll("\\s+", " "));
-                    chatArea.append("You: " + msgToSend + "\n");
+                    chatArea.append(DateTimeFormatter.ofPattern("HH:mm:ss").format(LocalDateTime.now()) + "\tYou: " + msgToSend + "\n");
                 }
             } catch (IOException ioException) {
                 ioException.printStackTrace();
@@ -119,5 +105,43 @@ public class Client extends JFrame {
 
         add(splitPane, BorderLayout.CENTER);
         setVisible(true);
+    }
+
+    public void msgSend(String msgToSend) throws IOException {
+        if (socket.isConnected()) {
+            out.write(msgToSend);
+            out.newLine();
+            out.flush();
+        }
+    }
+
+    public void msgListen() {
+        new Thread(() -> {
+            String msgFrom;
+            while (socket.isConnected()) {
+                try {
+                    msgFrom = in.readLine();
+                    chatArea.append(DateTimeFormatter.ofPattern("HH:mm:ss").format(LocalDateTime.now()) + "\t" + msgFrom + "\n");
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        }).start();
+    }
+
+    public void closeAll(Socket socket, BufferedReader in, BufferedWriter out) {
+        try {
+            if (in != null) {
+                in.close();
+            }
+            if (out != null) {
+                out.close();
+            }
+            if (socket != null) {
+                socket.close();
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 }
